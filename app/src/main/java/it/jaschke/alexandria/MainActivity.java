@@ -63,6 +63,16 @@ public class MainActivity extends ActionBarActivity implements NavigationDrawerF
     @Override
     public void onNavigationDrawerItemSelected(int position) {
 
+ // *** bug fixed:  in tablet landscape, when you select a book to see the detail and after that go to add book, the rigth_container keeped the book detail
+ // with this code we fisx it because  we clean the rith container with a empty detail... with further time I would change all of these layaouts
+        if(IS_TABLET && position == 1) {
+            boolean isLandscape = getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE;
+            if(isLandscape) getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.right_container, new BookDetail())
+                    .addToBackStack(null)
+                    .commit();
+        }
+
         FragmentManager fragmentManager = getSupportFragmentManager();
         Fragment nextFragment;
 
@@ -82,7 +92,8 @@ public class MainActivity extends ActionBarActivity implements NavigationDrawerF
 
         fragmentManager.beginTransaction()
                 .replace(R.id.container, nextFragment)
-                .addToBackStack((String) title)
+                //.addToBackStack((String) title)
+                .addToBackStack(null)
                 .commit();
     }
 
@@ -144,9 +155,13 @@ public class MainActivity extends ActionBarActivity implements NavigationDrawerF
         if(findViewById(R.id.right_container) != null){
             id = R.id.right_container;
         }
+
+// *** bug fisex. when a book is clicked to see it detail in landscape tablet, the second time you clicked the book, the book
+// detail became empty, now it is fixed
         getSupportFragmentManager().beginTransaction()
                 .replace(id, fragment)
-                .addToBackStack("Book Detail")
+                //.addToBackStack("Book Detail")
+                .addToBackStack(null)
                 .commit();
 
     }

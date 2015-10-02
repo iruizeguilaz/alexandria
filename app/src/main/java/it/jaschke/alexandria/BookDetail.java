@@ -1,11 +1,13 @@
 package it.jaschke.alexandria;
 
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.LocalBroadcastManager;
@@ -34,12 +36,14 @@ public class BookDetail extends Fragment implements LoaderManager.LoaderCallback
     private String ean;
     private String bookTitle;
     private ShareActionProvider shareActionProvider;
-
+    private boolean isLandscape ;
     public BookDetail(){
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        isLandscape = getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE;
+
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
     }
@@ -48,23 +52,42 @@ public class BookDetail extends Fragment implements LoaderManager.LoaderCallback
     @Override
     public View onCreateView(final LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
+// *** bug fixed in tablets, there were a problem in acumulating added fragments in backstack in tablets landscape
+        if(MainActivity.IS_TABLET) {
+            FragmentManager fm = getFragmentManager();
+            boolean booksFound = false;
+            for(int backEntryIndex = 0; backEntryIndex < fm.getBackStackEntryCount(); backEntryIndex++){
+                int id = fm.getBackStackEntryAt(backEntryIndex).getId();
+                String str = fm.getBackStackEntryAt(id).getName();
+                if(str != null && str.contains("Book Detail")) booksFound = true;
+
+            }
+            if(booksFound && isLandscape) fm.popBackStack();
+        }
+
         Bundle arguments = getArguments();
         if (arguments != null) {
             ean = arguments.getString(BookDetail.EAN_KEY);
             getLoaderManager().restartLoader(LOADER_ID, null, this);
         }
+// *** bug fixed (in tablet landscape) when we inflated the right book detail and it was ampty, the delete buttom
+// showed up all the time, for instace, when we selected a book to see the detail and after that we went to scan, we saw
+// that image, this is fixed avoiding to inflate it when there are no arguments
+        if (arguments != null) {
+            rootView = inflater.inflate(R.layout.fragment_full_book, container, false);
 
-        rootView = inflater.inflate(R.layout.fragment_full_book, container, false);
-        rootView.findViewById(R.id.delete_button).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent bookIntent = new Intent(getActivity(), BookService.class);
-                bookIntent.putExtra(BookService.EAN, ean);
-                bookIntent.setAction(BookService.DELETE_BOOK);
-                getActivity().startService(bookIntent);
-                getActivity().getSupportFragmentManager().popBackStack();
-            }
-        });
+            rootView.findViewById(R.id.delete_button).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Intent bookIntent = new Intent(getActivity(), BookService.class);
+                    bookIntent.putExtra(BookService.EAN, ean);
+                    bookIntent.setAction(BookService.DELETE_BOOK);
+                    getActivity().startService(bookIntent);
+                    getActivity().getSupportFragmentManager().popBackStack();
+                }
+            });
+        }
+
         return rootView;
     }
 
@@ -75,6 +98,7 @@ public class BookDetail extends Fragment implements LoaderManager.LoaderCallback
 
         MenuItem menuItem = menu.findItem(R.id.action_share);
         shareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(menuItem);
+        if (shareActionProvider != null) createShareIntentProvider();
     }
 
     @Override
@@ -142,9 +166,10 @@ public class BookDetail extends Fragment implements LoaderManager.LoaderCallback
 
     @Override
     public void onPause() {
-        super.onDestroyView();
-        if(MainActivity.IS_TABLET && rootView.findViewById(R.id.right_container)==null){
-            getActivity().getSupportFragmentManager().popBackStack();
-        }
+        //super.onDestroyView();
+        //if(MainActivity.IS_TABLET && rootView.findViewById(R.id.right_container)==null){
+        //    getActivity().getSupportFragmentManager().popBackStack();
+        //}
+        super.onPause();
     }
 }
