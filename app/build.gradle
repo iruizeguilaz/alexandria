@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 21
-    buildToolsVersion "21.1.2"
+    buildToolsVersion "23.0.1"
 
     defaultConfig {
         applicationId "it.jaschke.alexandria"
@@ -37,5 +37,7 @@ android {
 
 dependencies {
     compile 'com.android.support:appcompat-v7:21.0.3'
+    // Important - the CameraSource implementation in this project requires version 8.1 or higher.
+    compile 'com.google.android.gms:play-services:8.1.0'
 
 }
