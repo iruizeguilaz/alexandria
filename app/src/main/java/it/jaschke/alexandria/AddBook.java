@@ -91,12 +91,11 @@ public class AddBook extends Fragment implements LoaderManager.LoaderCallbacks<C
         rootView.findViewById(R.id.scan_button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // This is the callback method that the system will invoke when your button is
-                // clicked. You might do this by launching another app or by including the
-                //functionality directly in this app.
-                // Hint: Use a Try/Catch block to handle the Intent dispatch gracefully, if you
-                // are using an external app.
-                //when you're done, remove the toast below.
+
+// *** I have used another way of getting the barcode scanner
+// I use some cleses from the Android Open Source Project that make use of Android Vision API to use the camera
+// and recognise the barcodes...
+
                 Context context = getActivity();
                 Intent intent = new Intent(context, BarcodeCaptureActivity.class);
                 startActivityForResult(intent, RC_BARCODE_CAPTURE);

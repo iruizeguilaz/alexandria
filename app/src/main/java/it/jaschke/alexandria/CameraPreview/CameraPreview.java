@@ -14,6 +14,9 @@ import android.view.SurfaceView;
 
 import java.io.IOException;
 
+
+// *** I am not using this class, instead, I am using a few clases of the Android Open Source Project that use the Android Vision API
+
 /** A basic Camera preview class */
 public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback {
     private SurfaceHolder mHolder;
